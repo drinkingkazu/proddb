@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-export PYTHONPATH=
+where="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export PYTHONPATH=$where:$PYTHONPATH
