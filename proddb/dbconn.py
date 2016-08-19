@@ -1,14 +1,13 @@
 import MySQLdb
 import MySQLdb.cursors
 import os,sys,time
-import dbenv
 
 class dbconn():
 
-    _host   = dbenv.DLPROD_DBHOST
-    _user   = dbenv.DLPROD_DBUSER
-    _passwd = dbenv.DLPROD_DBPASS
-    _dbname = dbenv.DLPROD_DBNAME
+    _host   = os.environ['DLPROD_DBHOST']
+    _user   = os.environ['DLPROD_DBUSER']
+    _passwd = os.environ['DLPROD_DBPASS']
+    _dbname = os.environ['DLPROD_DBNAME']
     _conn = None
     _cursorclass = MySQLdb.cursors.Cursor
     

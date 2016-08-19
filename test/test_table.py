@@ -1,4 +1,4 @@
-from pyproddb.table import table
+from  proddb.table import table
 import sys
 
 t=table('test_removeme')
@@ -29,6 +29,7 @@ t.reset_job_index(status=0)
 assert len(t.list(job_index=0)) == 1
 assert len(t.list(job_index=1)) == 1
 assert len(t.list(job_index=-1)) == 0
+assert t.count_jobs() == 2
 try:
     t.reset_job_index()
     sys.exit(1)

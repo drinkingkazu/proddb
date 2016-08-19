@@ -1,5 +1,5 @@
 import sys,os
-from pyproddb.table import table
+from proddb.table import table
 
 if not len(sys.argv) <4:
     print 'USAGE: %s PROJECT_NAME SESSION_ID [FILE1 FILE2 ...]' % sys.argv[0]

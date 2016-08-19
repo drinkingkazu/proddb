@@ -20,7 +20,7 @@ for l in open(sys.argv[2],'r').read().split('\n'):
 
 project_name = sys.argv[1]
 
-from pyproddb.table import table
+from proddb.table import table
 
 t=table(project_name)
 
