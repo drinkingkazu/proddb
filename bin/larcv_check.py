@@ -7,17 +7,13 @@ TARGET_DIR=sys.argv[1]
 if not TARGET_DIR.startswith('/'):
     TARGET_DIR = os.getcwd() + '/' + TARGET_DIR
 
-PREFIX='larlite'
+PREFIX='supera'
 SUFFIX='.root'
 
 job_files={}
-flavors=[]
 for f in [x for x in os.listdir(TARGET_DIR) if x.startswith(PREFIX) and x.endswith(SUFFIX)]:
 
     jobid = int(f.split('_')[-1].replace(SUFFIX,''))
-    flavor = f.split('_')[-2]
-    if not flavor in flavors:
-        flavors.append(flavor)
     if not jobid in job_files:
         job_files[jobid]=[]
     job_files[jobid].append('%s/%s' % (TARGET_DIR,f))
@@ -26,14 +22,9 @@ bad_files={}
 good_files={}
 for jobid,files in job_files.iteritems():
 
-    if not len(files) == len(flavors):
-        print 'JobID %d missing files (%d/%d)' % (jobid,len(files),len(flavors))
-        bad_files[jobid]=files
-        continue
-
     good=True
     for f in files:
-        ch=TChain("larlite_id_tree")
+        ch=TChain("image2d_tpc_tree")
         ch.AddFile(f)
         if ch.GetEntries() > 0: continue
         good=False

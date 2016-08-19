@@ -61,7 +61,7 @@ class table():
 
         return self._sequence
 
-    def register_session(self,files_v,status=1,check=True):
+    def register_session(self,files_v,status=1,session=None,check=True):
 
         if check:
             for f in files_v:
@@ -69,7 +69,8 @@ class table():
                     print "File not found:",f
                     raise Exception
 
-        session = self.max_session_id() + 1
+        if session is None:
+            session = self.max_session_id() + 1
 
         for f in files_v:
             self.fill(f,session,int(status))
@@ -87,6 +88,33 @@ class table():
             return int(row[0])
         except TypeError,IndexError:
             return 0
+
+    def diff_session(self,project):
+
+        t=table(project)
+        if not t.exis():
+            print 'ERROR: project does not exist',project
+            return ((),())
+        t.close()
+
+        query  = ' SELECT A.SESSION_ID, B.SESSION_ID from %s AS A LEFT JOIN %s AS B' % (self.table_name(),t.table_name())
+        query += ' ON B.SESSION_ID=A.SESSION_ID WHERE B.SESSION_ID IS NULL GROUP BY A.SESSION_ID;'
+        self._conn.ExecSQL(query)
+        a2b = []
+        while 1:
+            row = self._conn.cursor.fetchone()
+            if not row: break
+            a2b.append(int(row[0]))
+
+        query  = ' SELECT A.SESSION_ID, B.SESSION_ID from %s AS A LEFT JOIN %s AS B' % (t.table_name(),self.table_name())
+        query += ' ON B.SESSION_ID=A.SESSION_ID WHERE B.SESSION_ID IS NULL GROUP BY A.SESSION_ID;'
+        self._conn.ExecSQL(query)
+        b2a = []
+        while 1:
+            row = self._conn.cursor.fetchone()
+            if not row: break
+            b2a.append(int(row[0]))
+        return (tuple(a2b),tuple(b2a))
 
     def fill(self,filepath,session_id,status=1,sequence=None):
 
