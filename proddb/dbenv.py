@@ -1,16 +1,16 @@
 import os
 
-DLPROD_DBHOST=''
-DLPROD_DBUSER=''
-DLPROD_DBPASS=''
-DLPROD_DBNAME=''
+PRODDB_DBHOST=''
+PRODDB_DBUSER=''
+PRODDB_DBPASS=''
+PRODDB_DBNAME=''
 
-if 'DLPROD_DBHOST' in os.environ:
-    DLPROD_DBHOST = os.environ['DLPROD_DBHOST']
-if 'DLPROD_DBUSER' in os.environ:
-    DLPROD_DBUSER = os.environ['DLPROD_DBUSER']
-if 'DLPROD_DBPASS' in os.environ:
-    DLPROD_DBPASS = os.environ['DLPROD_DBPASS']
-if 'DLPROD_DBNAME' in os.environ:
-    DLPROD_DBNAME = os.environ['DLPROD_DBNAME']
+if 'PRODDB_DBHOST' in os.environ:
+    PRODDB_DBHOST = os.environ['PRODDB_DBHOST']
+if 'PRODDB_DBUSER' in os.environ:
+    PRODDB_DBUSER = os.environ['PRODDB_DBUSER']
+if 'PRODDB_DBPASS' in os.environ:
+    PRODDB_DBPASS = os.environ['PRODDB_DBPASS']
+if 'PRODDB_DBNAME' in os.environ:
+    PRODDB_DBNAME = os.environ['PRODDB_DBNAME']
 

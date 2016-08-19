@@ -4,10 +4,10 @@ import os,sys,time
 
 class dbconn():
 
-    _host   = os.environ['DLPROD_DBHOST']
-    _user   = os.environ['DLPROD_DBUSER']
-    _passwd = os.environ['DLPROD_DBPASS']
-    _dbname = os.environ['DLPROD_DBNAME']
+    _host   = os.environ['PRODDB_DBHOST']
+    _user   = os.environ['PRODDB_DBUSER']
+    _passwd = os.environ['PRODDB_DBPASS']
+    _dbname = os.environ['PRODDB_DBNAME']
     _conn = None
     _cursorclass = MySQLdb.cursors.Cursor
     
