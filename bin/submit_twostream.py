@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse,os,sys,stat
 from proddb.table import table
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from proddb.table import table
 import sys
 

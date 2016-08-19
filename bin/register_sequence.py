@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys,os
 
 if not len(sys.argv) == 3:

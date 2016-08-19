@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from proddb.dbconn import dbconn
 
 import sys
