@@ -78,7 +78,7 @@ class table():
         
         if sequence is None: sequence = self.sequence()
         sequence = int(sequence)
-
+        
         query = 'SELECT COUNT(DISTINCT(JOB_INDEX)) FROM %s WHERE SEQUENCE=%d AND JOB_INDEX >= 0;' % (self.table_name(),sequence)
         self._conn.ExecSQL(query)
 
@@ -270,7 +270,7 @@ class table():
 
         return res
 
-    def update_status(self,status,job_index=None,session_id=None,sequence=None):
+    def update_status(self,status,target_status=None,job_index=None,session_id=None,sequence=None):
 
         if sequence is None: sequence = self.sequence()
         sequence = int(sequence)
@@ -282,6 +282,8 @@ class table():
             condition_v.append('SESSION_ID = %d' % int(session_id))
         if job_index is not None:
             condition_v.append('JOB_INDEX = %d' % int(job_index))
+        if target_status is not None:
+            condition_v.append('STATUS = %d' % int(target_status))
 
         for c in condition_v:
 

@@ -95,8 +95,8 @@ if not outputdir.startswith('/'):
 user_exe = args.exe
 if not user_exe.startswith('/'):
     user_exe = os.getcwd() + '/' + args.exe
-    os.system('scp %s %s/' % (user_exe,logdir))
-    user_exe = user_exe[user_exe.rfind('/')+1:len(user_exe)]
+os.system('scp %s %s/' % (user_exe,logdir))
+user_exe = user_exe[user_exe.rfind('/')+1:len(user_exe)]
 
 shellexe  = ''
 shellexe += '#!/usr/bin/env bash\n'
@@ -104,6 +104,7 @@ if 'LARLITE_BASEDIR' in os.environ:
     shellexe += 'source %s/config/setup.sh\n' % os.environ['LARLITE_BASEDIR']
 if 'LARCV_BASEDIR' in os.environ:
     shellexe += 'source %s/configure.sh\n' % os.environ['LARCV_BASEDIR']
+
 shellexe += 'mkdir %s_tmp\n' % args.outputproject
 shellexe += 'cd %s_tmp\n' % args.outputproject
 shellexe += 'echo recording shellenv\n'
