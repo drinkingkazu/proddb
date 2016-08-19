@@ -16,10 +16,10 @@ if not t.exist():
     'Project does not exist:',project_name
     sys.exit(1)
 
-format=' %-7d : %-4d : %-4s : %-4d : %s : %40s'
+format=' %-7d : %-4d : %-4s : %-4d   : %-19s : %40s'
 
 print
-print  ' SESSION : JOB  : LOCK : STATUS : FILEPATH'
+print  ' SESSION : JOB  : LOCK : STATUS : TIME STAMP          : FILEPATH'
 for f in t.list(session_id=session_id):
     lock='0'
     if f[2]: lock='1'

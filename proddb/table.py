@@ -1,4 +1,5 @@
 from dbconn import dbconn
+from dbenv import *
 import sys
 
 class table():
@@ -38,7 +39,8 @@ class table():
         query += 'status     SMALLINT,'
         query += 'job_index  SMALLINT,'
         query += 'joblock    BOOLEAN,'
-        query += 'filepath   VARCHAR(200)'
+        query += 'filepath   VARCHAR(200),'
+        query += 'extra_data VARCHAR(200)'
         query += ');'
 
         self._conn.ExecSQL(query)
@@ -61,7 +63,45 @@ class table():
 
         return self._sequence
 
-    def register_session(self,files_v,status=1,session=None,check=True):
+    def last_timestamp(self,sequence=None):
+
+        if sequence is None: sequence = self.sequence()
+        sequence = int(sequence)
+
+        query = 'SELECT MAX(TIME_STAMP) FROM %s WHERE SEQUENCE = %d;' % (self.table_name(),sequence)
+
+        self._conn.ExecSQL(query)
+
+        row = self._conn.cursor.fetchone()
+        if not row: return ''
+        else: return row[0]
+
+    def describe(self):
+
+        num_sessions = self.count_sessions()
+        num_files = self.count_files()
+        job_info = self.job_info()
+        last_timestamp = self.last_timestamp()
+
+        msg = '%d sessions, %d files ... last update @ %s' % (num_sessions,num_files,last_timestamp)
+        for jobid,status_v in job_info.iteritems():
+            temp_msg = '(%d init, %d submitted, %d running, %d done, %d failed)'
+            temp_msg = temp_msg % (len(status_v[kSTATUS_INIT]),
+                                   len(status_v[kSTATUS_SUBMIT]),
+                                   len(status_v[kSTATUS_RUNNING]),
+                                   len(status_v[kSTATUS_DONE]),
+                                   len(status_v[kSTATUS_FAILED]))
+            if jobid is None or jobid is 'None': 
+                msg += '\nNot for job submission: ' + temp_msg
+            else:
+                numjobs  = len(status_v[kSTATUS_INIT]) + len(status_v[kSTATUS_SUBMIT]) + len(status_v[kSTATUS_RUNNING])
+                numjobs += len(status_v[kSTATUS_DONE]) + len(status_v[kSTATUS_FAILED])
+                msg += '\nJob ID %s ... %d jobs : ' % (jobid,numjobs) + temp_msg
+        return msg
+
+    def register_session(self,files_v,status=None,session=None,check=True):
+        
+        if status is None: status = kSTATUS_INIT
 
         if check:
             for f in files_v:
@@ -74,6 +114,55 @@ class table():
 
         for f in files_v:
             self.fill(f,session,int(status))
+
+    def register_jobid(self,jobid,job_index=None):
+
+        sequence = self.sequence()
+        
+        query = 'UPDATE %s SET EXTRA_DATA=\'%s\' WHERE SEQUENCE=%d' % (self.table_name(),str(jobid),sequence)
+        if job_index is not None:
+            query += ' AND JOB_INDEX = %d' % int(job_index)
+
+        query += ';'
+        
+        self._conn.ExecSQL(query)
+
+    def job_info(self,sequence=None):
+
+        if sequence is None: sequence = self.sequence()
+        sequence = int(sequence)
+
+        query = 'SELECT DISTINCT(EXTRA_DATA) FROM %s WHERE SEQUENCE=%d;' % (self.table_name(),sequence)
+        self._conn.ExecSQL(query)
+
+        jobid_v=[]
+        while 1:
+            row = self._conn.cursor.fetchone()
+            if not row: break
+            if row[0] is None or row[0] == 'None': break
+            jobid_v.append(row[0])
+
+        query_format = 'SELECT JOB_INDEX, STATUS FROM %s WHERE SEQUENCE=%d AND EXTRA_DATA=\'%s\' GROUP BY JOB_INDEX;'
+        res = {}
+        for jobid in jobid_v:
+
+            query = query_format % (self.table_name(),sequence,jobid)
+            self._conn.ExecSQL(query)
+
+            oneres={kSTATUS_INIT    : [],
+                    kSTATUS_SUBMIT  : [],
+                    kSTATUS_RUNNING : [],
+                    kSTATUS_DONE    : [],
+                    kSTATUS_FAILED  : []}
+            while 1:
+                row = self._conn.cursor.fetchone()
+                if not row: break
+                job_index = int(row[0])
+                status = int(row[1])
+                if not status in oneres: oneres[status]=[]
+                oneres[status].append(job_index)
+            res[jobid]=oneres
+        return res
 
     def count_jobs(self,sequence=None):
         
@@ -88,6 +177,48 @@ class table():
             return int(row[0])
         except TypeError,IndexError:
             return 0
+
+    def count_sessions(self,sequence=None):
+        
+        if sequence is None: sequence = self.sequence()
+        sequence = int(sequence)
+        
+        query = 'SELECT COUNT(DISTINCT(SESSION_ID)) FROM %s WHERE SEQUENCE=%d;' % (self.table_name(),sequence)
+        self._conn.ExecSQL(query)
+
+        try:
+            row = self._conn.cursor.fetchone()
+            return int(row[0])
+        except TypeError,IndexError:
+            return 0
+
+    def count_files(self,sequence=None):
+        
+        if sequence is None: sequence = self.sequence()
+        sequence = int(sequence)
+        
+        query = 'SELECT COUNT(DISTINCT(FILEPATH)) FROM %s WHERE SEQUENCE=%d;' % (self.table_name(),sequence)
+        self._conn.ExecSQL(query)
+
+        try:
+            row = self._conn.cursor.fetchone()
+            return int(row[0])
+        except TypeError,IndexError:
+            return 0
+
+    def count_status(self,sequence=None):
+
+        if sequence is None: sequence = self.sequence()
+        sequence = int(sequence)
+
+        query = 'SELECT DISTINCT(STATUS), COUNT(STATUS) FROM %s WHERE SEQUENCE = %s;' % (self.table_name(),sequence)
+        self._conn.ExecSQL(query)
+        res={}
+        while 1:
+            row = self._conn.cursor.fetchone()
+            if not row: break
+            res[int(row[0])] = int(row[1])
+        return res
 
     def diff_session(self,project):
 
@@ -116,7 +247,9 @@ class table():
             b2a.append(int(row[0]))
         return (tuple(a2b),tuple(b2a))
 
-    def fill(self,filepath,session_id,status=1,sequence=None):
+    def fill(self,filepath,session_id,status=None,sequence=None):
+
+        if status is None: status = kSTATUS_INIT
 
         if sequence is None: sequence = self.sequence()
         sequence = int(sequence)
@@ -142,7 +275,7 @@ class table():
         if sequence is None: sequence = self.sequence()
         sequence = int(sequence)
 
-        query = 'SELECT SESSION_ID, JOB_INDEX, JOBLOCK, STATUS, FILEPATH, TIME_STAMP FROM %s WHERE SEQUENCE = %d'
+        query = 'SELECT SESSION_ID, JOB_INDEX, JOBLOCK, STATUS, FILEPATH, TIME_STAMP, EXTRA_DATA FROM %s WHERE SEQUENCE = %d'
         query = query % (self.table_name(),sequence)
 
         condition_v = []
@@ -170,7 +303,26 @@ class table():
         while 1:
             row = self._conn.cursor.fetchone()
             if not row: break
-            res.append((int(row[0]),int(row[1]),bool(row[2]),int(row[3]),str(row[4]),str(row[5])))
+            res.append((int(row[0]),int(row[1]),bool(row[2]),int(row[3]),str(row[4]),str(row[5]),str(row[6])))
+
+        return res
+
+    def list_jobs(self, sequence=None):
+
+        if sequence is None: sequence = self.sequence()
+        sequence = int(sequence)
+
+        query = 'SELECT JOB_INDEX, STATUS, EXTRA_DATA, TIME_STAMP FROM %s WHERE SEQUENCE = %d AND JOB_INDEX >=0 '
+        query = query % (self.table_name(),sequence)
+        query += ' GROUP BY JOB_INDEX ORDER BY JOB_INDEX;'
+
+        self._conn.ExecSQL(query)
+
+        res = []
+        while 1:
+            row = self._conn.cursor.fetchone()
+            if not row: break
+            res.append((int(row[0]),int(row[1]),str(row[2]),str(row[3])))
 
         return res
 
@@ -298,7 +450,7 @@ class table():
 
         return res
 
-    def update_status(self,status,target_status=None,job_index=None,session_id=None,sequence=None):
+    def update_status(self,status,target_status=None,job_index=None,session_id=None,extra_data=None,sequence=None):
 
         if sequence is None: sequence = self.sequence()
         sequence = int(sequence)
@@ -312,6 +464,28 @@ class table():
             condition_v.append('JOB_INDEX = %d' % int(job_index))
         if target_status is not None:
             condition_v.append('STATUS = %d' % int(target_status))
+        if extra_data is not None:
+            condition_v.append('EXTRA_DATA=\'%s\'' % str(extra_data))
+
+        for c in condition_v:
+
+            query += ' AND %s' % c
+            
+        query += ';'
+        
+        self._conn.ExecSQL(query)
+
+    def update_job_status(self,status,job_index=None):
+
+        sequence = self.sequence()
+
+        query = 'UPDATE %s SET STATUS = %d WHERE SEQUENCE = %d' % (self.table_name(),int(status),sequence)
+
+        condition_v = []
+        if job_index is not None:
+            condition_v.append('JOB_INDEX = %d' % int(job_index))
+        else:
+            condition_v.append('JOB_INDEX >= 0')
 
         for c in condition_v:
 

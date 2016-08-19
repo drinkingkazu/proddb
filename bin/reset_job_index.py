@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from proddb.table import table
+from proddb.dbenv import *
 import sys
 
 if not len(sys.argv) in [2,3]:
@@ -8,7 +9,7 @@ if not len(sys.argv) in [2,3]:
 
 project_name = sys.argv[1]
 t=table(project_name)
-status = 1
+status = kSTATUS_INIT
 if len(sys.argv) == 3:
     status = int(sys.argv[2])
 

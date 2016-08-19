@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import argparse,os,sys,stat
+import argparse,os,sys,stat,commands
 from proddb.table import table
+from proddb.dbenv import *
 
 parser = argparse.ArgumentParser(description='Job Submission Script (use proddb)')
 
@@ -154,4 +155,14 @@ fout.close()
 os.system('chmod 775 %s' % shellexe_fname)
 
 # Submit
-os.system('condor_submit %s' % cmd_file)
+report=commands.getoutput('condor_submit %s' % cmd_file)
+jobid=report.split()[-1].rstrip('.')
+if not jobid.isdigit():
+    print 'Job submission failed...'
+    sys.exit(1)
+else:
+    jobid=int(jobid)
+    t=table(args.inputproject)
+    t.update_job_status(status=kSTATUS_SUBMIT)
+    t.register_jobid(jobid=jobid)
+sys.exit(0)

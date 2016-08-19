@@ -85,6 +85,7 @@ except ImportError:
     sys.exit(1)
 
 from proddb.table import table
+from proddb.dbenv import *
 t=table(project)
 if t.exist():
     user_input = ''
@@ -103,7 +104,7 @@ keys=good_files.keys()
 keys.sort()
 for k in keys:
     files=good_files[k]
-    t.register_session(files_v=files,status=1,session=k,check=False)
+    t.register_session(files_v=files,status=kSTATUS_INIT,session=k,check=False)
 
 #
 # Ask if we want to define files for job submission
@@ -120,4 +121,4 @@ if user_input in ['n','no']:
     sys.exit(0)
 
 t.unlock()
-t.reset_job_index(status=1)
+t.reset_job_index(status=kSTATUS_INIT)
