@@ -24,17 +24,14 @@ parser.add_argument('-ss','--session',default=None,
                     type=int, dest='session',
                     help='int, target session')
 
-
-    def update_status(self,status,job_index=None,session_id=None,sequence=None):
-
 args = parser.parse_args()
 
 #
 # Sanity checks
 #
-t=table(args.inputproject)
+t=table(args.project)
 if not t.exist():
-    print 'ERROR: Project does not exist:',args.inputproject
+    print 'ERROR: Project does not exist:',args.project
     sys.exit(1)
 
-t.update_status(status=int(args.nstatus),target_status=int(args.cstatus),job_index=int(args.jobindex),session_id=int(args.session))
+t.update_status(status=args.nstatus,target_status=args.cstatus,job_index=args.jobindex,session_id=args.session)
