@@ -147,7 +147,6 @@ if 'LARCV_BASEDIR' in os.environ:
 if 'PRODDB_DIR' in os.environ:
     shellexe += 'source %s/configure.sh;\n' % os.environ['PRODDB_DIR']
     shellexe += 'sleep 5;\n'
-shellexe += 'sleep $2;\n'
 shellexe += 'mkdir %s_tmp\n' % args.outputproject
 shellexe += 'cd %s_tmp\n' % args.outputproject
 shellexe += 'echo recording shellenv\n'
