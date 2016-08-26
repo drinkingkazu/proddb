@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse,os,sys,stat,commands
+import argparse,os,sys,stat,commands,socket
 from proddb.table import table
 from proddb.dbenv import *
 
@@ -29,6 +29,10 @@ parser.add_argument('-c','--config',
                     type=str, dest='cfg',
                     help='string, Config file',required=True)
 
+parser.add_argument('-as','--avoid-server',
+                    type=str, dest='avoidserver',default='',
+                    help='string, Server list to avoid')
+
 args = parser.parse_args()
 
 #
@@ -52,6 +56,30 @@ else:
     if not (s.st_mode & stat.S_IEXEC):
         print 'ERROR: File not an executable (permission):',args.exe
         sys.exit(1)
+
+#
+# Check avoid server option
+#
+server_list=[]
+if args.avoidserver:
+    fname=args.avoidserver
+    slist = open(fname,'r').read().split()
+    invalid_server = []
+    valid_server = []
+    for s in slist:
+        try:
+            valid_server.append(socket.gethostbyname(s))
+            server_list.append(s)
+        except Exception:
+            invalid_server.append(s)
+    if len(invalid_server):
+        for s in invalid_server:
+            print 'Invalid server:',s
+        sys.exit(1)
+    for x in xrange(len(valid_server)):
+        print 'Avoiding a host:',server_list[x],'... IP',valid_server[x]
+    print
+
 if os.path.isdir(args.logdir) and len(os.listdir(args.logdir)):
     print 'ERROR: Log directory already exist and not empty!'
     sys.exit(1)
@@ -146,7 +174,15 @@ cmd += 'Universe = vanilla\n'
 cmd += 'should_transfer_files = YES\n'
 cmd += 'when_to_transfer_output = ON_EXIT\n'
 cmd += 'getenv = True\n'
-cmd += 'Requirements = Arch == "X86_64"\n'
+if not server_list:
+    cmd += 'Requirements = Arch == "X86_64"\n'
+else:
+    condition = '(Arch == "X86_64" '
+    for s in server_list:
+        condition += ' && Machine != "%s" ' % s
+
+    condition += ')'
+    cmd += 'Requirements = %s\n' % condition
 cmd += 'Error  = %s/%s_$(PROCESS).err\n' % (logdir,args.outputproject)
 cmd += 'Output = %s/%s_$(PROCESS).out\n' % (logdir,args.outputproject)
 cmd += 'Log    = %s/%s_$(PROCESS).log\n' % (logdir,args.outputproject)

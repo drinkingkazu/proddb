@@ -1,0 +1,3 @@
+houston.nevis.columbia.edu
+riverside.nevis.columbia.edu
+bleeker.nevis.columbia.edu
