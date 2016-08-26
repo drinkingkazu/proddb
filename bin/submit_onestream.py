@@ -56,8 +56,17 @@ if os.path.isdir(args.logdir) and len(os.listdir(args.logdir)):
     print 'ERROR: Log directory already exist and not empty!'
     sys.exit(1)
 if os.path.isdir(args.outputdir) and len(os.listdir(args.outputdir)):
-    print 'ERROR: Output directory already exist and not empty!'
-    sys.exit(1)
+    print 'WARNING: Output directory already exist and not empty!'
+    user_input=''
+    while not user_input:
+        sys.stdout.write('Proceed? [y/n]:')
+        sys.stdout.flush()
+        user_input = sys.stdin.readline().rstrip('\n')
+        if not user_input.lower() in ['y','yes','n','no']:
+            user_input = ''
+
+    if user_input in ['n','no']:
+        sys.exit(1)
 
 for d in [args.logdir,args.outputdir]:
     if not os.path.isdir(d):
