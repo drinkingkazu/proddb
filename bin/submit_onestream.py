@@ -111,10 +111,15 @@ user_exe = user_exe[user_exe.rfind('/')+1:len(user_exe)]
 shellexe  = ''
 shellexe += '#!/usr/bin/env bash\n'
 if 'LARLITE_BASEDIR' in os.environ:
-    shellexe += 'source %s/config/setup.sh\n' % os.environ['LARLITE_BASEDIR']
+    shellexe += 'source %s/config/setup.sh;\n' % os.environ['LARLITE_BASEDIR']
+    shellexe += 'sleep 5;\n'
 if 'LARCV_BASEDIR' in os.environ:
-    shellexe += 'source %s/configure.sh\n' % os.environ['LARCV_BASEDIR']
-
+    shellexe += 'source %s/configure.sh;\n' % os.environ['LARCV_BASEDIR']
+    shellexe += 'sleep 5;\n'
+if 'PRODDB_DIR' in os.environ:
+    shellexe += 'source %s/configure.sh;\n' % os.environ['PRODDB_DIR']
+    shellexe += 'sleep 5;\n'
+shellexe += 'sleep $2;\n'
 shellexe += 'mkdir %s_tmp\n' % args.outputproject
 shellexe += 'cd %s_tmp\n' % args.outputproject
 shellexe += 'echo recording shellenv\n'
