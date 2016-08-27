@@ -172,6 +172,7 @@ cmd += 'Executable = %s\n' % shellexe_fname
 cmd += 'Universe = vanilla\n'
 cmd += 'should_transfer_files = YES\n'
 cmd += 'when_to_transfer_output = ON_EXIT\n'
+cmd += 'notification = Never\n'
 cmd += 'getenv = True\n'
 if not server_list:
     cmd += 'Requirements = Arch == "X86_64"\n'
