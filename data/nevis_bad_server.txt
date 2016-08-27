@@ -1,3 +1,4 @@
 houston.nevis.columbia.edu
 riverside.nevis.columbia.edu
 bleeker.nevis.columbia.edu
+amsterdam.nevis.columbia.edu
