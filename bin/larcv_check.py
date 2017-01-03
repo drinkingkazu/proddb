@@ -7,7 +7,7 @@ TARGET_DIR=sys.argv[1]
 if not TARGET_DIR.startswith('/'):
     TARGET_DIR = os.getcwd() + '/' + TARGET_DIR
 
-PREFIX='supera'
+PREFIX=''
 SUFFIX='.root'
 
 job_files={}
@@ -38,7 +38,7 @@ for jobid,files in job_files.iteritems():
 
 print 'Found',len(bad_files),'bad jobs'
 print bad_files.keys()
-print
+print 'Found',len(good_files),'good jobs'
 
 #
 # Ask if we want to remove them

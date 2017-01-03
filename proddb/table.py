@@ -494,5 +494,40 @@ class table():
         query += ';'
         
         self._conn.ExecSQL(query)
-        
+
+    def regroup_sessions(self,modular,status=None,sequence=None):
+
+        if sequence is None: sequence = self.sequence()
+        sequence = int(sequence)
+
+        query = 'SELECT COUNT(FILEPATH) FROM %s WHERE JOBLOCK > 0 ;' % self.table_name()
+        self._conn.ExecSQL(query)
+        lock_exist=False
+        res = self._conn.cursor.fetchone()
+        if res and bool(res[0]):
+            lock_exist=True
+
+        if lock_exist:
+            sys.stderr.write('ERROR: there are locked entries in this sequence!')
+            raise Exception
+
+        query = 'UPDATE %s SET JOB_INDEX = -1;' % self.table_name()
+        self._conn.ExecSQL(query)
+
+        query = 'SELECT ID FROM %s WHERE sequence = %d ' % (self.table_name(),sequence)
+        if status is not None:
+            query += ' AND STATUS = %d;' % int(status)
+            
+        self._conn.ExecSQL(query)
+        keys=[]
+
+        while 1:
+            row = self._conn.cursor.fetchone()
+            if not row: break
+            keys.append( (int(len(keys)/int(modular)), int(row[0]) ) )
+
+        for key in keys:
+            query  = 'UPDATE %s ' % self.table_name()
+            query += ' SET SESSION_ID = %d WHERE ID = %d;' % key
+            self._conn.ExecSQL(query)
 
