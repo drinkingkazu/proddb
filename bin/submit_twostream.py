@@ -112,8 +112,8 @@ if not outputdir.startswith('/'):
 user_exe = args.exe
 if not user_exe.startswith('/'):
     user_exe = os.getcwd() + '/' + args.exe
-    os.system('scp %s %s/' % (user_exe,logdir))
-    user_exe = user_exe[user_exe.rfind('/')+1:len(user_exe)]
+os.system('scp %s %s/' % (user_exe,logdir))
+user_exe = user_exe[user_exe.rfind('/')+1:len(user_exe)]
 
 shellexe  = ''
 shellexe += '#!/usr/bin/env bash\n'
@@ -131,7 +131,7 @@ shellexe += 'scp %s/%s ./\n' % (logdir,user_exe)
 shellexe += 'echo listing dir contents...\n'
 shellexe += 'ls\n'
 shellexe += 'echo executing...\n'
-shellexe += './%s $1 $2 $3 $4 $5\n' % user_exe
+shellexe += './%s $1 $2 $3 $4 $5 $6\n' % user_exe
 shellexe += 'echo\n'
 shellexe += 'echo listing dir contents...\n'
 shellexe += 'ls\n'
@@ -151,7 +151,7 @@ cmd += 'Requirements = Arch == "X86_64"\n'
 cmd += 'Error  = %s/%s_$(PROCESS).err\n' % (logdir,args.outputproject)
 cmd += 'Output = %s/%s_$(PROCESS).out\n' % (logdir,args.outputproject)
 cmd += 'Log    = %s/%s_$(PROCESS).log\n' % (logdir,args.outputproject)
-cmd += 'Arguments = %s %s %s $(PROCESS) %s %s %s\n' % (args.inputproject1,args.inputproject2,cfg,outputdir,args.outputproject)
+cmd += 'Arguments = %s %s %s $(PROCESS) %s %s\n' % (args.inputproject1,args.inputproject2,cfg,outputdir,args.outputproject)
 cmd += 'Queue %d\n' % njobs
 
 # Copy cfg to log dir
